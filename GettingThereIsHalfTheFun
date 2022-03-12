@@ -47,8 +47,8 @@ setTimeout(()=>{
   d.element[0].style.width='auto';
 
   //Link danger range and number
-  document.getElementById('dangerRange').addEventListener('change',function(evt){document.getElementById('dangerNumber').value = evt.target.value;});
-  document.getElementById('dangerNumber').addEventListener('change',function(evt){document.getElementById('dangerRange').value = evt.target.value;});
+  document.getElementById('dangerRange').addEventListener('input',function(evt){document.getElementById('dangerNumber').value = evt.target.value;});
+  document.getElementById('dangerNumber').addEventListener('input',function(evt){document.getElementById('dangerRange').value = evt.target.value;});
 
   //Add event listener to the roll button
   document.getElementById('rollBtn').addEventListener('click',function(){
