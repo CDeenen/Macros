@@ -1,5 +1,7 @@
 /*
 This script macro generates a dialog to automatically create encounters using 'Getting There Is Half The Fun' by the AngryGM: https://theangrygm.com/getting-there-is-half-the-fun/
+This macro requires you to configure roll tables for different encounters. You can use the same table for multiple parts of the day, or use different tables for each.
+Additionally you need a roll table with weather conditions.
 Author: CDeenen
 */
 
@@ -17,7 +19,7 @@ const weatherTable = "weatherTable";
 
 //Content of the dialog
 let content = `
-    <div style="display:flex">
+    <div style="display:flex" id="GettingThere">
     <label style="width:50%">Danger Level</label>
     <input type='range' id='dangerRange' min=0 max=6 value=3 style="width:40%">
     <input type='number' id='dangerNumber' min=0 max=6 value=3 style="width:5%; margin-left:5%">
@@ -33,59 +35,66 @@ for (let i=0; i<dayParts.length; i++)
   </div>
 `;
 
-//Create a new dialog
-let d = new Dialog({
- title: "Test Dialog",
- content,
- buttons: {}
-}).render(true)
 
-//Wait 100ms for the dialog to initialize
-setTimeout(()=>{
+//Check if the dialog is already open. If not, create a new dialog
+if (document.getElementById('GettingThere') != null) ui.notifications.warn('"Getting There Is Half The Fun" dialog already open.');
 
-  //Autosize width of dialog
-  d.element[0].style.width='auto';
+else {
+  //Create a new dialog
+  let d = new Dialog({
+    title: "Getting There Is Half The Fun",
+    content,
+    buttons: {}
+  }).render(true)
 
-  //Link danger range and number
-  document.getElementById('dangerRange').addEventListener('input',function(evt){document.getElementById('dangerNumber').value = evt.target.value;});
-  document.getElementById('dangerNumber').addEventListener('input',function(evt){document.getElementById('dangerRange').value = evt.target.value;});
+    //Wait 100ms for the dialog to initialize
+  setTimeout(()=>{
 
-  //Add event listener to the roll button
-  document.getElementById('rollBtn').addEventListener('click',function(){
+    //Autosize width of dialog
+    d.element[0].style.width='auto';
 
-  //Create new roll
-  let r = new Roll("7d6");
+    //Link danger range and number
+    document.getElementById('dangerRange').addEventListener('input',function(evt){document.getElementById('dangerNumber').value = evt.target.value;});
+    document.getElementById('dangerNumber').addEventListener('input',function(evt){document.getElementById('dangerRange').value = evt.target.value;});
 
-  //Evaluate the roll
-  r.evaluate(async=false);
-  const results = r.dice[0].results;
+    //Add event listener to the roll button
+    document.getElementById('rollBtn').addEventListener('click',function(){
 
-  for (let i=0; i<results.length; i++) {
-    //For each die, print result
-    document.getElementById(`box${i}`).innerHTML = `${dayParts[i]}<br>${results[i].result}`;
-    
-    //Adjust padding to make space for the result
-    document.getElementById(`box${i}`).style.padding = "20px 0px";
-    
-    //If result is bigger than danger level, color box gray
-    if (results[i].result>parseInt(document.getElementById('dangerRange').value)) document.getElementById(`box${i}`).style.backgroundColor = "gray";
-    
-    //If result is equal to or lower than danger level, color box green and roll tables
-    else {
-      document.getElementById(`box${i}`).style.backgroundColor = "green";
-      game.tables.getName(rollTables[i]).draw({displayChat:false}).then(res=>{
-        const encounter = res.results[0].data.text;
-        game.tables.getName(weatherTable).draw({displayChat:false}).then(res2=>{
-          //Create chat message
-          let chatData = {
-            user: game.user._id,
-            speaker: ChatMessage.getSpeaker(),
-            content: `${dayPartsText[i]} the party encounters ${encounter} and the weather is ${res2.results[0].data.text}`
-          };
-          ChatMessage.create(chatData, {});
-        });
-      });
-    }
-  }
-});
-},100);
+      //Create new roll
+      let r = new Roll("7d6");
+
+      //Evaluate the roll
+      r.evaluate(async=false);
+      const results = r.dice[0].results;
+
+      for (let i=0; i<results.length; i++) {
+        //For each die, print result
+        document.getElementById(`box${i}`).innerHTML = `${dayParts[i]}<br>${results[i].result}`;
+        
+        //Adjust padding to make space for the result
+        document.getElementById(`box${i}`).style.padding = "20px 0px";
+        
+        //If result is bigger than danger level, color box gray
+        if (results[i].result>parseInt(document.getElementById('dangerRange').value)) document.getElementById(`box${i}`).style.backgroundColor = "gray";
+        
+        //If result is equal to or lower than danger level, color box green and roll tables
+        else {
+          document.getElementById(`box${i}`).style.backgroundColor = "green";
+          game.tables.getName(rollTables[i]).draw({displayChat:false}).then(res=>{
+            const encounter = res.results[0].data.text;
+            game.tables.getName(weatherTable).draw({displayChat:false}).then(res2=>{
+              
+              //Create chat message
+              let chatData = {
+                user: game.user._id,
+                speaker: ChatMessage.getSpeaker(),
+                content: `${dayPartsText[i]} the party encounters ${encounter} and the weather is ${res2.results[0].data.text}`
+              };
+              ChatMessage.create(chatData, {});
+            });
+          });
+        }
+      }
+    });
+  },100);
+}
