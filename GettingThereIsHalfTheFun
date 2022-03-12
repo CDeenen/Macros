@@ -24,6 +24,18 @@ let content = `
     <input type='range' id='dangerRange' min=0 max=6 value=3 style="width:40%">
     <input type='number' id='dangerNumber' min=0 max=6 value=3 style="width:5%; margin-left:5%">
   </div>
+  <div style="display:flex">
+    <label style="width:50%">Include Weather</label>
+    <input type='checkbox' style="width:50%" id='includeWeather'>
+  </div>
+  <div style="display:flex">
+    <label style="width:50%">Chat Message</label>
+    <select style="width:50%" id='chatMessageSelect'>
+      <option value="private">Private</option>
+      <option value="public">Public</option>
+      <option value="none">None</option>
+    </select>
+  </div>
   <div style="display:flex;width:100%">
 `
 
@@ -82,16 +94,29 @@ else {
           document.getElementById(`box${i}`).style.backgroundColor = "green";
           game.tables.getName(rollTables[i]).draw({displayChat:false}).then(res=>{
             const encounter = res.results[0].data.text;
-            game.tables.getName(weatherTable).draw({displayChat:false}).then(res2=>{
-              
-              //Create chat message
+
+            //If weather is included, draw from weather table and create chat message
+            if (document.getElementById('includeWeather').checked) {
+              game.tables.getName(weatherTable).draw({displayChat:false}).then(res2=>{
+                let chatData = {
+                  user: game.user._id,
+                  speaker: ChatMessage.getSpeaker(),
+                  content: `${dayPartsText[i]} the party encounters ${encounter} and the weather is ${res2.results[0].data.text}`
+                };
+                if (document.getElementById('chatMessageSelect').value == 'private') chatData.whisper = [game.user.id]
+                if (document.getElementById('chatMessageSelect').value != 'none')ChatMessage.create(chatData, {});
+              });
+            }
+            //Else if weather is not included, create chat message
+            else {
               let chatData = {
                 user: game.user._id,
                 speaker: ChatMessage.getSpeaker(),
-                content: `${dayPartsText[i]} the party encounters ${encounter} and the weather is ${res2.results[0].data.text}`
+                content: `${dayPartsText[i]} the party encounters ${encounter}`
               };
-              ChatMessage.create(chatData, {});
-            });
+              if (document.getElementById('chatMessageSelect').value == 'private') chatData.whisper = [game.user.id]
+              if (document.getElementById('chatMessageSelect').value != 'none')ChatMessage.create(chatData, {});
+            }
           });
         }
       }
