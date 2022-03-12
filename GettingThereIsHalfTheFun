@@ -1,0 +1,91 @@
+/*
+This script macro generates a dialog to automatically create encounters using 'Getting There Is Half The Fun' by the AngryGM: https://theangrygm.com/getting-there-is-half-the-fun/
+Author: CDeenen
+*/
+
+//Name of the parts of the day
+const dayParts = ["Morning","Afternoon","Evening","Dusk","Midnight","Predawn","Discovery"];
+
+//Text to be printed at the beginning of the chat message for each day part
+const dayPartsText = ["In the morning","In the afternoon","In the evening","During dusk","At midnight","In the predawn","During discovery"];
+
+//Name of the roll tables for each part of the day
+const rollTables = ["table1","table2","table3","table4","table5","table6","table7"];
+
+//Name of the weather table
+const weatherTable = "weatherTable";
+
+//Content of the dialog
+let content = `
+    <div style="display:flex">
+    <label style="width:50%">Danger Level</label>
+    <input type='range' id='dangerRange' min=0 max=6 value=3 style="width:40%">
+    <input type='number' id='dangerNumber' min=0 max=6 value=3 style="width:5%; margin-left:5%">
+  </div>
+  <div style="display:flex;width:100%">
+`
+
+for (let i=0; i<dayParts.length; i++)
+  content += `<div id='box${i}' style="width:100px; height:75px; border-style:solid; border-radius: 5px; margin:5px; text-align:center; padding: 25px 0">${dayParts[i]}</div>`
+  content += `</div>
+  <div>
+  <button type="button" id='rollBtn'>Roll</button>
+  </div>
+`;
+
+//Create a new dialog
+let d = new Dialog({
+ title: "Test Dialog",
+ content,
+ buttons: {}
+}).render(true)
+
+//Wait 100ms for the dialog to initialize
+setTimeout(()=>{
+
+  //Autosize width of dialog
+  d.element[0].style.width='auto';
+
+  //Link danger range and number
+  document.getElementById('dangerRange').addEventListener('change',function(evt){document.getElementById('dangerNumber').value = evt.target.value;});
+  document.getElementById('dangerNumber').addEventListener('change',function(evt){document.getElementById('dangerRange').value = evt.target.value;});
+
+  //Add event listener to the roll button
+  document.getElementById('rollBtn').addEventListener('click',function(){
+
+  //Create new roll
+  let r = new Roll("7d6");
+
+  //Evaluate the roll
+  r.evaluate(async=false);
+  const results = r.dice[0].results;
+
+  for (let i=0; i<results.length; i++) {
+    //For each die, print result
+    document.getElementById(`box${i}`).innerHTML = `${dayParts[i]}<br>${results[i].result}`;
+    
+    //Adjust padding to make space for the result
+    document.getElementById(`box${i}`).style.padding = "20px 0px";
+    
+    //If result is bigger than danger level, color box gray
+    if (results[i].result>parseInt(document.getElementById('dangerRange').value)) document.getElementById(`box${i}`).style.backgroundColor = "gray";
+    
+    //If result is equal to or lower than danger level, color box green and roll tables
+    else {
+      document.getElementById(`box${i}`).style.backgroundColor = "green";
+      game.tables.getName(rollTables[i]).draw({displayChat:false}).then(res=>{
+        const encounter = res.results[0].data.text;
+        game.tables.getName(weatherTable).draw({displayChat:false}).then(res2=>{
+          //Create chat message
+          let chatData = {
+            user: game.user._id,
+            speaker: ChatMessage.getSpeaker(),
+            content: `${dayPartsText[i]} the party encounters ${encounter} and the weather is ${res2.results[0].data.text}`
+          };
+          ChatMessage.create(chatData, {});
+        });
+      });
+    }
+  }
+});
+},100);
