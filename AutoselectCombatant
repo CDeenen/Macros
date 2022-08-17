@@ -16,7 +16,7 @@ ui.notifications.info("Registering 'Autoselect Combatant' macro");
 //Register game.autoCombatant to prevent macro duplicates
 game.autoSelectCombatant = true;
 
-//On the 'updateCombat' hook, get the token of the current combatant and control it, or release all tokens if 'releaseAll' is set to true
+//On the 'updateCombat' hook, get the token of the current combatant and control it if the user owns the token, otherwise release all tokens if 'releaseAll' is set to true
 Hooks.on('updateCombat', (combat) => {
     const token = canvas.tokens.get(combat.current.tokenId);
     if (token.isOwner) {
