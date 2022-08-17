@@ -1,0 +1,28 @@
+/*
+This script macro will automatically select the current combatant if that combatant is owned by the user.
+Setting 'releaseAll' below to true will release all tokens if the current combatant is not owned by the user. This will result in all owned tokens sharing their vision.
+
+Author: CDeenen
+*/
+const releaseAll = true;
+
+//If the macro is already registered, warn the user and end the macro
+if (game.autoSelectCombatant) {
+    ui.notifications.warn("'Autoselect Combatant' macro already registered");
+    return;
+}
+ui.notifications.info("Registering 'Autoselect Combatant' macro");
+
+//Register game.autoCombatant to prevent macro duplicates
+game.autoSelectCombatant = true;
+
+//On the 'updateCombat' hook, get the token of the current combatant and control it, or release all tokens if 'releaseAll' is set to true
+Hooks.on('updateCombat', (combat) => {
+    const token = canvas.tokens.get(combat.current.tokenId);
+    if (token.isOwner) {
+        token.control();
+    }
+    else if (releaseAll) {
+        canvas.tokens.releaseAll() 
+    }
+});
