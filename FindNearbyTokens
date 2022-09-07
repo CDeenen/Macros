@@ -1,7 +1,7 @@
 /*
 This script macro checks when tokens move in or out of range of a specified token ('targetToken'). 
-If more tokens than 'numberOfTokens' come within range, it calls the 'enableFeat()' function. 
-Conversely, if a token moves out of range resulting in there being less than 'numberOfTokens', it calls the 'disableFeat()' function.
+If more tokens than 'numberOfTokens' come within range, it calls the 'enableEffect()' function. 
+Conversely, if a token moves out of range resulting in there being less than 'numberOfTokens', it calls the 'disableEffect()' function.
 These 2 functions will have to be configured for the specific purpose of this macro, they are located at the bottom.
 
 Filtering can be done by including or excluding friendly, neutral, enemy or hidden tokens.
@@ -16,7 +16,7 @@ Author: CDeenen
 
 let targetToken = 'selected';    //Set to 'selected' to get the token you've currently got selected, otherwise specify a token name
 const maxDistance = 10;          //Max detection distance in ft
-const numberOfTokens = 3;        //Minimum number of tokens to trigger the feat
+const numberOfTokens = 3;        //Minimum number of tokens to trigger the effect
 const includeFriendly = false;   //Count friendly tokens
 const includeNeutral = false;    //Count neutral tokens
 const includeEnemy = true;       //Count enemy tokens
@@ -53,9 +53,9 @@ let alreadyRunning = game.findNearbyTokens != undefined;
 //Register the settings
 game.findNearbyTokens = {targetToken, maxDistance, numberOfTokens, includeFriendly, includeNeutral, includeEnemy, includeHidden, debug}
 
-//Set featEnabled to false if this is the first time the macro is called
+//Set effectEnabled to false if this is the first time the macro is called
 if (!alreadyRunning) {
-  game.findNearbyTokens.featEnabled = false;
+  game.findNearbyTokens.effectEnabled = false;
 }
 
 if (game.findNearbyTokens.debug) console.log("Settings:",game.findNearbyTokens);
@@ -123,23 +123,23 @@ function checkNearbyTokens() {
 
   if (game.findNearbyTokens.debug) console.log("Number of tokens counted:",counter);
 
-  //If the feat is not enabled and there are more tokens in range than 'numberOfTokens', run 'enableFeat'
-  if(!game.findNearbyTokens.featEnabled && counter >= game.findNearbyTokens.numberOfTokens) {
-    enableFeat();
-    game.findNearbyTokens.featEnabled = true;
+  //If the effect is not enabled and there are more tokens in range than 'numberOfTokens', run 'enableEffect'
+  if(!game.findNearbyTokens.effectEnabled && counter >= game.findNearbyTokens.numberOfTokens) {
+    enableEffect();
+    game.findNearbyTokens.effectEnabled = true;
   }
-  //Else if the feat is enabled but there are not enough tokens in range, run 'disableFeat'
-  else if (game.findNearbyTokens.featEnabled && counter < game.findNearbyTokens.numberOfTokens) {
-    disableFeat();
-    game.findNearbyTokens.featEnabled = false;
+  //Else if the effect is enabled but there are not enough tokens in range, run 'disableEffect'
+  else if (game.findNearbyTokens.effectEnabled && counter < game.findNearbyTokens.numberOfTokens) {
+    disableEffect();
+    game.findNearbyTokens.effectEnabled = false;
   }
 }
 
-//Use the 2 functions below to enable the feat on the token
-function enableFeat() {
-  console.log("Enable feat!");
+//Use the 2 functions below to enable the effect on the token
+function enableEffect() {
+  console.log("Enable effect!");
 }
 
-function disableFeat() {
-  console.log("Disable feat!");
+function disableEffect() {
+  console.log("Disable effect!");
 }
