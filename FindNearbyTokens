@@ -9,7 +9,6 @@ Filtering can be done by including or excluding friendly, neutral, hostile or hi
 Author: CDeenen
 */
 
-
 ////////////////////////////////////////////////////////////////////
 //Configuration variables
 ////////////////////////////////////////////////////////////////////
@@ -24,18 +23,17 @@ const includeHidden = false;     //Count hidden tokens
 
 const debug = false;             //Print debug info if set to true
 
-
 ////////////////////////////////////////////////////////////////////
 //Functions that are run when an effect should be enabled/disabled
 ////////////////////////////////////////////////////////////////////
 
 function enableEffect() {
     console.log("Enable effect!");
-  }
+}
   
-  function disableEffect() {
+function disableEffect() {
     console.log("Disable effect!");
-  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //No configuration below this point
