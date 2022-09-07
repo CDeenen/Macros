@@ -2,7 +2,7 @@
 This script macro checks when tokens move in or out of range of a specified token ('targetToken'). 
 If more tokens than 'numberOfTokens' come within range, it calls the 'enableEffect()' function. 
 Conversely, if a token moves out of range resulting in there being less than 'numberOfTokens', it calls the 'disableEffect()' function.
-These 2 functions will have to be configured for the specific purpose of this macro, they are located at the bottom.
+These 2 functions will have to be configured for the specific purpose of this macro.
 
 Filtering can be done by including or excluding friendly, neutral, hostile or hidden tokens.
 
