@@ -1,0 +1,163 @@
+/**
+ * This script macro configures the Lock View settings for specified scenes.
+ * Either the current scene, all scenes in the navigation bar, or all scenes in the game.
+ * For each setting that you want to change, check the 'Edit' box, and set 'New Value' to the desired value.
+ * Then press one of the buttons at the bottom to apply the changes. Changes made to the current scene are not directly applied, a refresh is required.
+ */
+
+ const autoScaleOptions = [
+    game.i18n.localize("LockView.Scene.Autoscale.Off"),
+    game.i18n.localize("LockView.Scene.Autoscale.Hor"),
+    game.i18n.localize("LockView.Scene.Autoscale.Vert"),
+    game.i18n.localize("LockView.Scene.Autoscale.Auto"),
+    game.i18n.localize("LockView.Scene.Autoscale.AutoOutside"),
+    game.i18n.localize("LockView.Scene.Autoscale.Grid")
+  ];
+  
+  const configHTML = `
+  <style>
+    .center {
+      text-align:center;
+    }
+  </style>
+  <table>
+    <tr>
+      <th style="width:50%">Setting</th>
+      <th>New Value</th>
+      <th style="Width:5%">Edit</th>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.LockPan")}</td>
+      <td class='center'><input id="LockView_lockPan" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_lockPan" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.LockZoom")}</td>
+      <td class='center'><input id="LockView_lockZoom" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_lockZoom" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.boundingBox")}</td>
+      <td class='center'><input id="LockView_boundingBox" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_boundingBox" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.Autoscale.Label")}</td>
+      <td class='center'>
+        <select id="LockView_autoScale" name="lv_value">
+          <option value="0">${autoScaleOptions[0]}</option>
+          <option value="1"}>${autoScaleOptions[1]}</option>
+          <option value="2"}>${autoScaleOptions[2]}</option>
+          <option value="3"}>${autoScaleOptions[3]}</option>
+          <option value="4"}>${autoScaleOptions[4]}</option>
+          <option value="5"}>${autoScaleOptions[5]}</option>
+        </select>
+      </td>
+      <td><input id="change_LockView_autoScale" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.ExcludeSidebar")}</td>
+      <td class='center'><input id="LockView_excludeSidebar" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_excludeSidebar" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.BlackenSidebar")}</td>
+      <td class='center'><input id="LockView_blackenSidebar" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_blackenSidebar" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.CollapseSidebar")}</td>
+      <td class='center'><input id="LockView_collapseSidebar" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_collapseSidebar" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.HideUI")}</td>
+      <td class='center'><input id="LockView_hideUI" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_hideUI" type="checkbox" name="lv_value"></td>
+    </tr>
+    <tr>
+      <td>${game.i18n.localize("LockView.Scene.ForceInit")}</td>
+      <td class='center'><input id="LockView_forceInit" type="checkbox" name="lv_value"></td>
+      <td><input id="change_LockView_forceInit" type="checkbox" name="lv_value"></td>
+    </tr>
+  </table>
+  `
+  
+  const dialog = new Dialog({
+    title: "Lock View: Configure Scenes",
+    content: configHTML,
+    buttons:{
+      button1: {
+        label: "Current Scene",
+        callback: () => {applySettings('current')}
+      },
+      button2: {
+        label: "Scenes in Navigation",
+        callback: () => {applySettings('navigation')}
+      },
+      button3: {
+        label: "All Scenes",
+        callback: () => {applySettings('all')}
+      }
+    }
+  }).render(true);
+  
+  //console.log(dialog.elements.getElementsByName('lv_value'));
+  setTimeout(() => {
+    const elmnts = document.getElementsByName('lv_value');
+    for (let elmnt of elmnts) elmnt.addEventListener("change", function(e) {changeDetected(e)});
+  }, 100);
+  
+  let settings = {
+    lockPan: false,
+    lockZoom: false,
+    boundingBox: false,
+    autoScale: 0,
+    forceInit: false,
+    boundingBox: false,
+    excludeSidebar: false,
+    blackenSidebar: false,
+    hideUI: false,
+    collapseSidebar: false
+  };
+  let change = {};
+  
+  function changeDetected(event) {
+    const id = event.target.id
+    const settingEdit = id.includes('change')
+    if (settingEdit) change[id.replace('change_LockView_','')] = event.target.checked;
+    else settings[id.replace('LockView_','')] = event.target.checked ? event.target.checked : event.target.value;
+  }
+  
+  function applySettings(applyTo) {
+    if (applyTo == 'current') configureScene(canvas.scene);
+    else if (applyTo == 'navigation') for (let scene of game.scenes.apps[0].scenes) configureScene(scene);
+    else if (applyTo == 'all') for (let scene of game.scenes.contents) configureScene(scene);
+  }
+  
+  function configureScene(scene) {
+    if (change.lockPan) {
+      scene.setFlag('LockView', 'lockPan', settings.lockPan);
+      scene.setFlag('LockView', 'lockPanInit', settings.lockPan);
+    }
+    if (change.lockZoom) {
+      scene.setFlag('LockView', 'lockZoom', settings.lockZoom);
+      scene.setFlag('LockView', 'lockZoomInit', settings.lockZoom);
+    }
+    if (change.boundingBox) {
+      scene.setFlag('LockView', 'boundingBox', settings.boundingBox);
+      scene.setFlag('LockView', 'boundingBoxInit', settings.boundingBox);
+    }
+    if (change.autoScale)
+      scene.setFlag('LockView', 'autoScale', settings.autoScale);
+    if (change.forceInit)
+      scene.setFlag('LockView', 'forceInit', settings.forceInit);
+    if (change.excludeSidebar)
+      scene.setFlag('LockView', 'excludeSidebar', settings.excludeSidebar);
+    if (change.blackenSidebar)
+      scene.setFlag('LockView', 'blackenSidebar', settings.blackenSidebar);
+    if (change.hideUI)
+      scene.setFlag('LockView', 'hideUI', settings.hideUI);
+    if (change.collapseSidebar)
+      scene.setFlag('LockView', 'collapseSidebar', settings.collapseSidebar);
+  }
